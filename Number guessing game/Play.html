@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Guessing Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --error: #ef4444;
+            --success: #10b981;
+            --hint: #eab308;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1.2rem;
+            font-family: 'Outfit', sans-serif;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Hide number arrows */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .message.error { background: rgba(239, 68, 68, 0.2); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .message.success { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .message.hint { background: rgba(234, 179, 8, 0.2); color: var(--hint); border: 1px solid rgba(234, 179, 8, 0.3); margin-top: 10px; }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+            40%, 60% { transform: translate3d(3px, 0, 0); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+
+        .stats-val {
+            font-weight: 800;
+            color: var(--text-light);
+        }
+
+        #play-again {
+            display: none;
+            margin-top: 15px;
+            background: var(--success);
+        }
+        #play-again:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="game-container">
+        <h1>Guess the Number</h1>
+        <p class="subtitle">I'm thinking of a number between 1 and 1000.</p>
+
+        <div class="input-group">
+            <input type="number" id="guess-input" placeholder="Enter your guess..." accesskey="g">
+        </div>
+
+        <button id="guess-btn" onclick="checkGuess()">Guess!</button>
+        <button id="play-again" onclick="resetGame()">Play Again</button>
+
+        <div id="status-message" class="message"></div>
+        <div id="hint-message" class="message hint" style="display: none;"></div>
+
+        <div class="stats">
+            <div>Mistakes: <span id="mistakes-count" class="stats-val">0</span></div>
+            <div>Range: <span class="stats-val">1 - 1000</span></div>
+        </div>
+    </div>
+
+    <script>
+        let secretNumber = Math.floor(Math.random() * 1000) + 1;
+        let mistakes = 0;
+
+        const guessInput = document.getElementById('guess-input');
+        const guessBtn = document.getElementById('guess-btn');
+        const statusMessage = document.getElementById('status-message');
+        const hintMessage = document.getElementById('hint-message');
+        const mistakesCount = document.getElementById('mistakes-count');
+        const gameContainer = document.getElementById('game-container');
+        const playAgainBtn = document.getElementById('play-again');
+
+        // Allow pressing Enter to guess
+        guessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        function showMessage(element, text, isShow, type = '') {
+            element.textContent = text;
+            element.className = 'message ' + type + (isShow ? ' show' : '');
+            if(!isShow) {
+                setTimeout(() => element.style.display = 'none', 400);
+            } else {
+                element.style.display = 'block';
+            }
+        }
+
+        function triggerShake() {
+            gameContainer.classList.remove('shake');
+            void gameContainer.offsetWidth; // trigger reflow
+            gameContainer.classList.add('shake');
+        }
+
+        function checkGuess() {
+            const guess = parseInt(guessInput.value);
+
+            if (isNaN(guess) || guess < 1 || guess > 1000) {
+                showMessage(statusMessage, "Please enter a valid number between 1 and 1000", true, 'error');
+                triggerShake();
+                return;
+            }
+
+            if (guess === secretNumber) {
+                // Correct Guess
+                showMessage(statusMessage, "🎉 Correct Guess! You found it!", true, 'success');
+                showMessage(hintMessage, "", false);
+                guessInput.disabled = true;
+                guessBtn.style.display = 'none';
+                playAgainBtn.style.display = 'block';
+            } else {
+                // Wrong Guess
+                mistakes++;
+                mistakesCount.textContent = mistakes;
+                showMessage(statusMessage, "❌ Wrong Guess", true, 'error');
+                triggerShake();
+                guessInput.value = '';
+                guessInput.focus();
+
+                // Check for hints
+                if (mistakes >= 3) {
+                    if (guess > secretNumber) {
+                        showMessage(hintMessage, "💡 HINT: Guess lower!", true, 'hint');
+                    } else if (guess < secretNumber) {
+                        showMessage(hintMessage, "💡 HINT: Guess higher!", true, 'hint');
+                    }
+                }
+            }
+        }
+
+        function resetGame() {
+            secretNumber = Math.floor(Math.random() * 1000) + 1;
+            mistakes = 0;
+            mistakesCount.textContent = mistakes;
+            
+            guessInput.disabled = false;
+            guessInput.value = '';
+            guessBtn.style.display = 'block';
+            playAgainBtn.style.display = 'none';
+            
+            showMessage(statusMessage, "", false);
+            showMessage(hintMessage, "", false);
+            
+            guessInput.focus();
+        }
+
+        // Focus input on load
+        window.onload = () => guessInput.focus();
+    </script>
+</body>
+</html>
